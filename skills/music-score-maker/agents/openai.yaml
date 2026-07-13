@@ -1,0 +1,4 @@
+interface:
+  display_name: "Music Score Maker / 歌曲乐谱生成器"
+  short_description: "Create printable PDF sheet music from songs"
+  default_prompt: "Use $music-score-maker to research a song and produce a playable, printable PDF score with editable source files."
