@@ -12,22 +12,22 @@
 - 生成可编辑的 MusicXML 与试听/练习 MIDI
 - 为初学者调整音域、八度、谱面密度和翻页
 - 正确处理萨克斯等移调乐器的实际音高与记谱音高
+- 锁定具体录音版本，并以开头、主歌、过渡、高潮、结尾五个检查点核对旋律
+- 校验完整曲式、展开后时长、休止/换气、MIDI 音域与移调，避免“文件能打开但音乐不对”
 - 解释电子吹管的 USB MIDI、蓝牙 MIDI、MIDI 文件播放和蓝牙音频差异
 - 记录资料来源、改编假设和不确定片段
 
 ### 安装
 
-仓库发布到 GitHub 后，将 `<owner>` 替换为仓库所有者：
-
 ```bash
-npx skills add <owner>/music-score-maker-skill --skill music-score-maker
+npx skills add liubon/music-score-maker-skill --skill music-score-maker
 ```
 
 Codex 也可以使用内置安装器按目录安装：
 
 ```bash
 python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
-  --repo <owner>/music-score-maker-skill \
+  --repo liubon/music-score-maker-skill \
   --path skills/music-score-maker
 ```
 
@@ -55,7 +55,7 @@ It supports beginner adaptations, transposing instruments, MusicXML, MIDI, PDF e
 Install from GitHub with a compatible skills client:
 
 ```bash
-npx skills add <owner>/music-score-maker-skill --skill music-score-maker
+npx skills add liubon/music-score-maker-skill --skill music-score-maker
 ```
 
 The MusicXML and MIDI builders require Python 3.10+ and only use the standard library. PDF output additionally requires a notation renderer supplied by the host environment.

@@ -21,6 +21,8 @@ Identify the exact work, version, artist, recording, live/studio variant, and re
 
 If the user supplies audio, a score, notation, or a link, treat it as the primary target artifact.
 
+Lock the target before transcribing. Record a version fingerprint containing the URL or local filename, visible title/performer, duration, and access date; add a file hash when the target is local. Never silently mix the studio release, a live performance, a cover, and an existing arrangement. A newly supplied recording starts a new score version unless the user explicitly asks to preserve the old target.
+
 ### 2. Research before writing
 
 Search the web for the exact title plus artist/composer and recording version. Use primary or authoritative sources for identity, credits, release/version, key, tempo, meter, and form. Read [references/research-and-rights.md](references/research-and-rights.md) before researching a copyrighted or commercially released work.
@@ -39,6 +41,13 @@ Determine, in order:
 
 Cross-check uncertain passages against more than one lawful clue when possible. Mark approximations explicitly. Never invent precision: if the source is insufficient, offer a chord chart, short excerpt, or clearly labeled arrangement instead of claiming an exact transcription.
 
+Choose and record one scope before encoding:
+
+- `full transcription`: the unfolded score follows the complete target recording, including pickups, rests, repeated verses, interludes, and ending
+- `condensed practice arrangement`: selected sections or repeated material are shortened for practice and must be labeled as condensed in the title/source note
+
+For a full transcription, compare the unfolded score or audition-MIDI duration with the target recording. A mismatch above 5% is a failure until the form, tempo map, pickup, fermatas, and repeats are explained. A condensed arrangement may be shorter, but must report both durations and may not be described as complete or exact.
+
 For a transposing instrument, model concert pitch and written pitch separately. Confirm the instrument and transposition from an authoritative source. Preserve the recording key when the user wants to play with the original track, then write the correctly transposed part.
 
 For a beginner arrangement:
@@ -48,6 +57,7 @@ For a beginner arrangement:
 - retain recognizable melody and rhythm unless simplification is requested
 - disclose octave shifts, omissions, simplifications, or key changes
 - favor larger, less crowded notation over maximizing notes per page
+- preserve phrase rests and breath opportunities; do not fill unknown or sustained passages with repeated notes merely to make every measure add up
 
 ### 4. Encode the score
 
@@ -75,21 +85,32 @@ When the user wants a score to open, read, practice, or print, generate a PDF in
 
 ### 6. Validate musically and structurally
 
-Always validate before delivery:
+Read [references/quality-gates.md](references/quality-gates.md). “The files open” and “the music is correct” are separate claims. Always pass the artifact gate first:
 
 ```bash
 python3 "$SKILL_DIR/scripts/build_score.py" score.json --validate-only
 python3 "$SKILL_DIR/scripts/inspect_musicxml.py" song.musicxml
 ```
 
-Then, when available:
+Pass all three gates before calling a result accurate or finished:
+
+1. **Artifact gate**: valid measure arithmetic, MusicXML, MIDI, PDF metadata, A4 layout, final barline, and no visual defects.
+2. **Playback/transposition gate**: exact written-to-sounding pitches including octave, intended tempo/meter, sensible sounding range, correct General MIDI program, and repeats unfolded or explicitly disclosed.
+3. **Source-fidelity gate**: at minimum compare the opening/first entry, verse, build, chorus peak, and ending against the locked recording for pitch, onset, duration, rests, and form.
+
+When available:
 
 - render the MusicXML with any available notation engine; do not require the user to own or use notation software
 - audition the MIDI and check downbeats, phrase lengths, leaps, accidentals, octave placement, and chord/melody clashes
 - inspect the first page and at least one dense or uncertain passage
 - run PDF metadata inspection and confirm page count and paper size when a PDF is delivered
+- compare the score's unfolded duration and section order with the locked recording
+- treat zero rests or eight or more consecutive rest-free measures in a monophonic wind part as a failure unless the source clearly justifies continuous breathing or the score explicitly marks a circular-breathing passage
+- verify the user-facing audition MIDI uses sounding pitch and an appropriate instrument program; a written-pitch MIDI may be retained only as a clearly named support file
 
 Fix validation errors rather than suppressing them. A normal measure must equal the time-signature duration; mark genuine pickup or shortened measures with `implicit: true`.
+
+If any source-fidelity checkpoint has not been checked, say `technically valid, musically unverified` rather than `accurate`, `calibrated`, or `finished`. Listening to the whole MIDI without a side-by-side source comparison is not sufficient evidence.
 
 ### 7. Explain MIDI and electronic instruments accurately
 
@@ -111,16 +132,19 @@ Briefly report:
 - exact version and arrangement assumptions
 - key, meter, tempo, instrumentation, and difficulty
 - sources used, with links
-- confidence (`high`, `medium`, or `low`) for identity, harmony, and melody
+- confidence (`high`, `medium`, or `low`) separately for identity, pitch, rhythm, form, transposition, and ornamentation
 - passages that are approximate or newly arranged
 - beginner adaptations and written range when applicable
 - whether MIDI is concert-sounding, written-pitch, or controller-oriented
+- whether the score is full or condensed, its unfolded duration, the target duration, and how repeats are handled
 
 Do not call the result an “official score” unless it is actually derived from an authorized official score and the user has the right to use it.
 
 ## Output quality rules
 
 - Make every note intentional; do not fill unknown passages with arbitrary patterns.
+- Do not replace unknown rhythm with a small set of repeating half/quarter/eighth-note cells and then label the result source-calibrated.
+- Do not use cache-safe filenames or polished metadata to imply a new musical verification; provenance labels must reflect what was actually checked.
 - Keep playable ranges and idiomatic writing for the requested instruments.
 - Prefer enharmonic spellings consistent with the key and harmonic function.
 - Put chord symbols at actual harmonic changes, not mechanically on every beat.
