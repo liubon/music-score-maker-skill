@@ -307,17 +307,35 @@ def build_midi(spec: dict[str, Any], output: Path) -> None:
             (0, 0, b"\xff\x03" + vlq(len(name)) + name),
             (0, 0, bytes([0xC0 | channel, int(part.get("midi_program", 0))])),
         ]
+        active_ties: set[int] = set()
         tick = 0
         for measure in part["measures"]:
             for event in measure.get("events", []):
                 length = round(float(duration(event["duration"])) * ticks_per_quarter)
                 pitches = event_pitches(event)
                 velocity = max(1, min(127, int(event.get("velocity", 80))))
+                tie = event.get("tie")
                 for pitch_value in pitches:
                     note = midi_note(pitch_value)
-                    events.append((tick, 2, bytes([0x90 | channel, note, velocity])))
-                    events.append((tick + length, 1, bytes([0x80 | channel, note, 0])))
+                    if tie == "start":
+                        if note not in active_ties:
+                            events.append((tick, 2, bytes([0x90 | channel, note, velocity])))
+                            active_ties.add(note)
+                    elif tie == "continue":
+                        if note not in active_ties:
+                            events.append((tick, 2, bytes([0x90 | channel, note, velocity])))
+                            active_ties.add(note)
+                    elif tie == "stop":
+                        if note not in active_ties:
+                            events.append((tick, 2, bytes([0x90 | channel, note, velocity])))
+                        events.append((tick + length, 1, bytes([0x80 | channel, note, 0])))
+                        active_ties.discard(note)
+                    else:
+                        events.append((tick, 2, bytes([0x90 | channel, note, velocity])))
+                        events.append((tick + length, 1, bytes([0x80 | channel, note, 0])))
                 tick += length
+        for note in active_ties:
+            events.append((tick, 1, bytes([0x80 | channel, note, 0])))
         tracks.append(midi_track(events))
     header = b"MThd" + struct.pack(">IHHH", 6, 1, len(tracks), ticks_per_quarter)
     output.parent.mkdir(parents=True, exist_ok=True)

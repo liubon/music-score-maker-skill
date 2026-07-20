@@ -96,6 +96,28 @@ def smoke_test_builders() -> None:
         assert ET.parse(musicxml).getroot().tag == "score-partwise"
         assert midi.read_bytes().startswith(b"MThd")
 
+        tie_spec = {
+            "title": "MIDI Tie Regression",
+            "time": {"beats": 4, "beat_type": 4},
+            "parts": [{
+                "id": "P1",
+                "name": "Alto Saxophone",
+                "midi_program": 65,
+                "measures": [
+                    {"number": 1, "events": [{"pitch": "C4", "duration": "4", "tie": "start", "velocity": 80}]},
+                    {"number": 2, "events": [{"pitch": "C4", "duration": "4", "tie": "stop", "velocity": 80}]},
+                ],
+            }],
+        }
+        tie_json = temp / "tie.json"
+        tie_xml = temp / "tie.musicxml"
+        tie_midi = temp / "tie.mid"
+        tie_json.write_text(json.dumps(tie_spec), encoding="utf-8")
+        run(sys.executable, str(build), str(tie_json), "--output", str(tie_xml), "--midi", str(tie_midi))
+        payload = tie_midi.read_bytes()
+        assert payload.count(bytes([0x90, 60, 80])) == 1, "tied notes must have one MIDI note-on"
+        assert payload.count(bytes([0x80, 60, 0])) == 1, "tied notes must have one MIDI note-off"
+
 
 def main() -> None:
     assert SKILL_MD.is_file()

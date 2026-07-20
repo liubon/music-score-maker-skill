@@ -50,6 +50,7 @@ At each checkpoint verify pitch sequence and octave; onset, length, syncopation,
 - For an E-flat alto saxophone part with `transpose = -9`, sounding MIDI pitch must equal written MIDI pitch minus 9 for every note.
 - The user-facing audition MIDI should normally be sounding pitch and use an appropriate General MIDI program. Label written-pitch MIDI explicitly.
 - Verify note count, starts, durations, tempo, time signature, program change, pitch range, and end time.
+- Verify tied notes are sustained in MIDI rather than re-articulated at every tie segment.
 - If the printed score uses repeats, produce an unfolded audition MIDI or clearly disclose a linear preview.
 
 ## 6. Status vocabulary
